@@ -12,7 +12,7 @@ It takes under a minute and writes a GIF of about 25 seconds and under 400 KB.
 
 ## Your data stays out of it
 
-Off camera, the tape makes a fresh `/tmp/oproj.XXXX` and runs `seed.sh` on it. The script builds `o-proj` into the sandbox's `~/bin` and writes an `env` file that points `HOME`, every `XDG_*` directory, `O_PROJ_MANIFEST`, `O_PROJ_HUB` and `PATH` inside it, points `O_PROJ_MTM` at a binary that does not exist, unsets `TUIOS_*`, `MTM_SERVER` and `O_PROJ_MTM_ARGS`, and turns off your git config. It makes three repositories under `~/proj` (`tea-shop`, `rice-cooker` with an uncommitted change, `miso-notes`), each with an invented `example` GitHub remote that is never contacted, and links the first two from `~/hub/o`. The demo passes `--no-mtm` to `new` and never uses `--github`; no o-inventory is on PATH, so `new` skips the hook. The tape deletes the directory when it ends.
+Off camera, the tape makes a fresh `/tmp/oproj.XXXX` and runs `seed.sh` on it. The script builds `o-proj` into the sandbox's `~/bin` and writes an `env` file that points `HOME`, every `XDG_*` directory, `O_PROJ_MANIFEST`, `O_PROJ_HUB` and `PATH` inside it, points `O_PROJ_MTM` at a binary that does not exist, unsets `TUIOS_*`, `MTM_SERVER` and `O_PROJ_MTM_ARGS`, and turns off your git config. It makes three repositories under `~/proj` (`tea-shop`, `rice-cooker` with an uncommitted change, `miso-notes`), each with an invented `example` GitHub remote that is never contacted, and links the first two from `$HOME/hub/o`. The demo passes `--no-mtm` to `new` and never uses `--github`; no o-inventory is on PATH, so `new` skips the hook. The tape deletes the directory when it ends.
 
 To look at the demo data by hand:
 

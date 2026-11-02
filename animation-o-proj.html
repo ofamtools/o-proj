@@ -192,7 +192,7 @@ const SPEED = parseFloat(params.get("speed") || "1");
 //   split   two code panels side by side; glow group 1 lights on each
 //   quote   one full-screen line, [[…]] underlined thick
 //   fan     a source card wired to reader panels, with a caption
-// real: ~/hub/repos.json, the oden entry
+// real: $HOME/hub/repos.json, the oden entry
 const ENTRY = [
   "[",
   "  {",
@@ -210,7 +210,7 @@ const ENTRY = [
 const LIST = [
   "$ o proj list --table",
   "NAME         PATH                BRANCH  ORIGIN",
-  "ai-utils     ~/hub/ai/utils      main    adopted",
+  "ai-utils     ~/proj/ai-utils     main    adopted",
   "matomeru     ~/proj/matomeru     main    adopted",
   "mtm-mermaid  ~/proj/mtm-mermaid  main    o-proj",
   "nabe         ~/proj/nabe         main    o-proj",
@@ -247,18 +247,18 @@ const VERIFY = [
 // manifest.go, hub.go, mtm.go) for a project named demo; sha invented
 const NEWOUT = [
   "$ o proj new demo",
-  "mkdir: created directory '/Users/unixsuperhero/proj/demo'",
-  "git init: /Users/unixsuperhero/proj/demo",
-  "@1|verify: git toplevel is /Users/unixsuperhero/proj/demo",
-  "write: /Users/unixsuperhero/proj/demo/AGENTS.md",
-  "write: /Users/unixsuperhero/proj/demo/.gitignore",
-  "write: /Users/unixsuperhero/proj/demo/LICENSE",
+  "mkdir: created directory '~/proj/demo'",
+  "git init: ~/proj/demo",
+  "@1|verify: git toplevel is ~/proj/demo",
+  "write: ~/proj/demo/AGENTS.md",
+  "write: ~/proj/demo/.gitignore",
+  "write: ~/proj/demo/LICENSE",
   "commit: 3f2a9c1 chore: new project demo",
-  "@2|manifest: demo -> ~/proj/demo in ~/hub/repos.json",
-  "@3|link: ~/hub/o/demo -> /Users/unixsuperhero/proj/demo",
+  "@2|manifest: demo -> ~/proj/demo in $HOME/hub/repos.json",
+  "@3|link: $HOME/hub/o/demo -> ~/proj/demo",
   "@3|hook: installed",
-  "@3|mtm: project demo for /Users/unixsuperhero/proj/demo",
-  "cd /Users/unixsuperhero/proj/demo",
+  "@3|mtm: project demo for ~/proj/demo",
+  "cd ~/proj/demo",
 ];
 
 // real: o family -d, stderr line plus the report it runs (directory column cut)
@@ -321,20 +321,20 @@ const PROJECT = [
 const CHAPTERS = [
 {
   title: "One manifest",
-  src: "README.md · manifest.go · ~/hub/repos.json",
+  src: "README.md · manifest.go · $HOME/hub/repos.json",
   beats: [
     { type: "thread", messages: [
       { who: "you", text: "what is o proj, in one breath?" },
       { who: "model", text: [
-        "I keep the family's repositories on disk. Each one is [[one entry in `~/hub/repos.json`]]: a name, a remote, a branch, and a path that keeps its `~` so the file works on every machine.",
-      ], code: { lang: "md", big: true, blocks: [{ label: "~/hub/repos.json · real entry", lines: ENTRY }] } },
+        "I keep the family's repositories on disk. Each one is [[one entry in `$HOME/hub/repos.json`]]: a name, a remote, a branch, and a path that keeps its `~` so the file works on every machine.",
+      ], code: { lang: "md", big: true, blocks: [{ label: "$HOME/hub/repos.json · real entry", lines: ENTRY }] } },
       { who: "you", text: "which repos do you know about right now?" },
       { who: "model", text: [
         "Twelve. `new` records the ones I create, `adopt` and `seed` record the ones that already existed, and [[an entry is never rewritten]] once it is there.",
       ], code: { lang: "md", blocks: [{ label: "o proj list --table · real, URL column cut", lines: LIST }] } },
     ]},
     { type: "fan",
-      source: { label: "~/hub/repos.json · written once", lines: [
+      source: { label: "$HOME/hub/repos.json · written once", lines: [
         "{",
         "  \"name\": \"oden\",",
         "  \"url\": \"git@github.com:…/oden.git\",",
@@ -343,7 +343,7 @@ const CHAPTERS = [
         "}",
       ] },
       targets: [
-        { name: "o proj link --all", verb: "the hub links it", lines: ["<faint>$ readlink ~/hub/o/oden</faint>", "/Users/unixsuperhero/proj/oden"] },
+        { name: "o proj link --all", verb: "the hub links it", lines: ["<faint>$ readlink $HOME/hub/o/oden</faint>", "~/proj/oden"] },
         { name: "o proj clone / sync", verb: "sync clones and fetches it", lines: ["<faint>$ o proj sync --dry-run</faint>", "oden: clean"] },
         { name: "o proj status", verb: "status inspects it", lines: ["<faint>$ o proj status</faint>", "oden         clean  30       0        0       0         0    main"] },
         { name: "mtm", verb: "matomeru reads it", lines: ["<faint>cmd/mtm/directories.go</faint>", "exec.CommandContext(ctx, bin, \"list\") <faint>// o-proj list</faint>"] },

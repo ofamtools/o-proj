@@ -10,14 +10,14 @@ import (
 )
 
 // The hub is one directory of links to the manifest's repositories
-// (~/hub/o/NAME -> DIR), generated from the manifest on each machine: link
+// ($HOME/hub/o/NAME -> DIR), generated from the manifest on each machine: link
 // --all recreates them, so they are not committed. Links are absolute
 // (DIR is the entry's path expanded for this machine).
 
 // NoHub is the --hub value that skips the link.
 const NoHub = "none"
 
-// DefaultHub is $O_PROJ_HUB, else ~/hub/o.
+// DefaultHub is $O_PROJ_HUB, else $HOME/hub/o.
 func (t *Tool) DefaultHub() string {
 	if v := lookup(t.Env, "O_PROJ_HUB"); v != "" {
 		return v
@@ -26,7 +26,7 @@ func (t *Tool) DefaultHub() string {
 }
 
 // PlansDir is the family's plans, todos and roadmap: o-plans beside the
-// hub directory (~/hub/o gives ~/hub/o-plans), written with ~ for home.
+// hub directory, written with ~ for home.
 func (t *Tool) PlansDir() string {
 	return t.tilde(filepath.Join(filepath.Dir(t.expand(t.DefaultHub())), "o-plans"))
 }

@@ -11,7 +11,7 @@ import (
 )
 
 // The manifest is o proj's own record of the family's repositories:
-// ~/hub/repos.json ($O_PROJ_MANIFEST), a JSON array sorted by name. Paths
+// $HOME/hub/repos.json ($O_PROJ_MANIFEST), a JSON array sorted by name. Paths
 // are stored with ~ for the home directory and expanded per machine, so
 // the same file works wherever the hub is copied; the hub links, clone and
 // sync are generated from it.
@@ -39,7 +39,7 @@ type Row struct {
 	Dir string `json:"dir"`
 }
 
-// ManifestPath is $O_PROJ_MANIFEST, else ~/hub/repos.json.
+// ManifestPath is $O_PROJ_MANIFEST, else $HOME/hub/repos.json.
 func (t *Tool) ManifestPath() string {
 	if v := lookup(t.Env, "O_PROJ_MANIFEST"); v != "" {
 		return t.expand(v)

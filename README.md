@@ -12,7 +12,7 @@
 
 <p align="center"><img alt="o-proj in a throwaway home: seeding the manifest from hub links, adopting a repository, the manifest and git status tables, a new project and a dry-run sync" src="assets/demo.gif" width="720"></p>
 
-o-proj (`o proj` under [oden](https://github.com/ofamtools/oden)'s `o`, or `o-proj`) keeps the family's repositories: it creates a repository with a verified `git init`, records it in the manifest `~/hub/repos.json`, links it from `~/hub/o`, clones and syncs the manifest on another machine, and reports git status. It moved out of matomeru (`cmd/o-proj`, history kept by `git subtree split`) and folds in o-family's status report.
+o-proj (`o proj` under [oden](https://github.com/ofamtools/oden)'s `o`, or `o-proj`) keeps the family's repositories: it creates a repository with a verified `git init`, records it in the manifest `$HOME/hub/repos.json`, links it from `$HOME/hub/o`, clones and syncs the manifest on another machine, and reports git status. It moved out of matomeru (`cmd/o-proj`, history kept by `git subtree split`) and folds in o-family's status report.
 
 ## Install
 
@@ -37,7 +37,7 @@ ochazuke (`v0.28.0`) and oden (`v0.1.1`) are required at their tags. An untracke
 o proj new NAME [--root DIR] [--template T] [--existing] [--github] [--public] [--license mit|none] [--hub DIR|none] [--no-mtm]
 o proj adopt PATH [--name NAME]         # record an existing repository and link it
 o proj list [--table]                   # the manifest (JSON by default)
-o proj link NAME | --all                # ~/hub/o/NAME -> DIR, from the manifest
+o proj link NAME | --all                # $HOME/hub/o/NAME -> DIR, from the manifest
 o proj unlink NAME | --all
 o proj clone [NAME...]                  # clone what is missing on this machine, then link
 o proj sync [NAME...] [--pull] [--dry-run]   # clone, link, fetch, report dirty/behind; --pull fast-forwards clean ones
@@ -52,16 +52,16 @@ o proj catalog                          # the project and template nouns, for na
 
 `--github` creates the repository under `$O_PROJ_GITHUB_OWNER` (default `ofamtools`), and a template's `{{.Module}}` is `$O_PROJ_MODULE_PREFIX` followed by NAME (default `ofam.dev/`, so `ofam.dev/NAME`).
 
-The demo above, as text: a throwaway home with three repositories under `~/proj`, two of them linked from `~/hub/o`, none recorded yet (`/private/tmp/oproj.uK3x` is the demo's temporary directory):
+The demo above, as text: a throwaway home with three repositories under `~/proj`, two of them linked from `$HOME/hub/o`, none recorded yet (`/private/tmp/oproj.uK3x` is the demo's temporary directory). Hub paths are shown with `$HOME` for readability:
 
 ```console
 $ o-proj seed
 seed: rice-cooker -> ~/proj/rice-cooker (hub)
 seed: tea-shop -> ~/proj/tea-shop (hub)
-seed: added 2 to ~/hub/repos.json
+seed: added 2 to $HOME/hub/repos.json
 $ o-proj adopt ~/proj/miso-notes
-manifest: miso-notes -> ~/proj/miso-notes in ~/hub/repos.json
-link: ~/hub/o/miso-notes -> /private/tmp/oproj.uK3x/home/proj/miso-notes
+manifest: miso-notes -> ~/proj/miso-notes in $HOME/hub/repos.json
+link: $HOME/hub/o/miso-notes -> /private/tmp/oproj.uK3x/home/proj/miso-notes
 $ o-proj list --table
 NAME         PATH                BRANCH  ORIGIN   URL
 miso-notes   ~/proj/miso-notes   main    adopted  git@github.com:example/miso-notes.git
@@ -83,8 +83,8 @@ write: /private/tmp/oproj.uK3x/home/proj/o-tea/AGENTS.md
 write: /private/tmp/oproj.uK3x/home/proj/o-tea/.gitignore
 write: /private/tmp/oproj.uK3x/home/proj/o-tea/LICENSE
 commit: e3536df chore: new project o-tea
-manifest: o-tea -> ~/proj/o-tea in ~/hub/repos.json
-link: ~/hub/o/o-tea -> /private/tmp/oproj.uK3x/home/proj/o-tea
+manifest: o-tea -> ~/proj/o-tea in $HOME/hub/repos.json
+link: $HOME/hub/o/o-tea -> /private/tmp/oproj.uK3x/home/proj/o-tea
 hook: skipped (o-inventory not on PATH)
 mtm: skipped (--no-mtm)
 cd /private/tmp/oproj.uK3x/home/proj/o-tea
@@ -111,14 +111,14 @@ tea-shop     adopted  ~/proj/tea-shop     none     yes
 
 | Noun | Columns (name never drops; when narrow, project drops origin, license, linked, then path; template drops kind, then path) |
 | --- | --- |
-| project | name, origin, path (with `~`), license (`mit`, `other`, `none`; empty when the directory is not on this machine), linked (`yes`, `no`, or `other` when something else is at `~/hub/o/NAME`) |
+| project | name, origin, path (with `~`), license (`mit`, `other`, `none`; empty when the directory is not on this machine), linked (`yes`, `no`, or `other` when something else is at `$HOME/hub/o/NAME`) |
 | template | name, kind (`dir` or `tar.gz`), path |
 
 ## Concepts
 
 ### The manifest
 
-`~/hub/repos.json` (`$O_PROJ_MANIFEST`), a JSON array sorted by name:
+`$HOME/hub/repos.json` (`$O_PROJ_MANIFEST`), a JSON array sorted by name:
 
 ```json
 [{ "name": "oden", "url": "git@github.com:ofamtools/oden.git", "path": "~/proj/oden", "branch": "main", "origin": "adopted" }]
@@ -128,7 +128,7 @@ tea-shop     adopted  ~/proj/tea-shop     none     yes
 
 ### Hub links
 
-The hub links under `~/hub/o` (`$O_PROJ_HUB`) are generated from the manifest (`link --all`, `sync`) and are not committed. Links and sync never replace anything already at a hub name, never touch a dirty repository's files, and pull only with `--ff-only`. `--dry-run` writes nothing (no clone, link, fetch or pull).
+The hub links under `$HOME/hub/o` (`$O_PROJ_HUB`) are generated from the manifest (`link --all`, `sync`) and are not committed. Links and sync never replace anything already at a hub name, never touch a dirty repository's files, and pull only with `--ff-only`. `--dry-run` writes nothing (no clone, link, fetch or pull).
 
 ### Record first
 

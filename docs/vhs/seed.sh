@@ -3,7 +3,7 @@
 # DIR for the README demo: HOME, the XDG directories, a hub with an o/
 # directory of links, and three invented repositories under ~/proj, two of
 # them already linked from the hub and one with an uncommitted change.
-# Nothing reads or writes your own ~/hub, manifest, mtm or GitHub. It writes
+# Nothing reads or writes your own hub, manifest, mtm or GitHub. It writes
 # DIR/env, which points HOME, the XDG directories, O_PROJ_MANIFEST,
 # O_PROJ_HUB and PATH inside DIR.
 #

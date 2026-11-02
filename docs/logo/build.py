@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Write assets/icon.svg, assets/logo-light.svg and assets/logo-dark.svg.
 
-Adapted from the o-family icon concepts (~/hub/o-plans/icons/build.py,
-concept o-proj-1, Tansu: a chest of drawers, every directory in its own
-drawer), simplified for 16 and 32 px: the drawers, gaps and handles sit on
+The mark is Tansu: a chest of drawers, every directory in its own
+drawer, simplified for 16 and 32 px: the drawers, gaps and handles sit on
 the 8-unit grid (one pixel at 16 px), the handles are twice as thick and the
 gaps are cut out of the chest, so the tile or the page shows through. The
 set and its geometry match

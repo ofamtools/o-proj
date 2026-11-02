@@ -1,12 +1,12 @@
 # o-proj: agent guide
 
-`o-proj` (so `o proj`) keeps the family's repositories on disk and the hub: it creates a repository with a verified `git init`, records it in the manifest `~/hub/repos.json` (`$O_PROJ_MANIFEST`), links it from `~/hub/o` (`$O_PROJ_HUB`), clones and syncs the manifest on another machine, and reports git status. Design: `~/hub/o-plans/plans/o-proj-split.md`.
+`o-proj` (so `o proj`) keeps the family's repositories on disk and the hub: it creates a repository with a verified `git init`, records it in the manifest `$HOME/hub/repos.json` (`$O_PROJ_MANIFEST`), links it from `$HOME/hub/o` (`$O_PROJ_HUB`), clones and syncs the manifest on another machine, and reports git status. Repository management stays separate from mtm work contexts.
 
 It is not mtm's `project` noun (a work context: tasks, notes, panes). The two meet only through each other's command line: `o proj new` runs `mtm catalog`, `mtm projects directories` and `mtm project new NAME --dir DIR`; mtm runs `o-proj list` for its known directories. o-proj never imports a matomeru package or opens mtm's database.
 
 ## Plans and todos
 
-Family plans, todos and the roadmap live in `~/hub/o-plans/` (`README.md` is the index). Read it before planning work; add or update items there. Do not add a TODO.md or docs/plans/ to this repo.
+Keep planning work in the family planning workspace, separate from this repository. Do not add a TODO.md or docs/plans/ to this repo.
 
 ## Where does X live
 

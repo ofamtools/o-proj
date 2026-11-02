@@ -3,7 +3,7 @@
 #
 # seed.sh builds o-proj and makes everything under a fresh /tmp/oproj.XXXX:
 # HOME, XDG dirs, a hub with o/ links, a manifest and three repositories. The
-# recording never reads or writes your own ~/hub, manifest, mtm or GitHub.
+# recording never reads or writes your own hub, manifest, mtm or GitHub.
 
 Output assets/demo.gif
 
