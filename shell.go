@@ -143,8 +143,21 @@ func (t *Tool) shell() (*ocli.Shell, error) {
 	r.Define("template").Columns(templateColumns...).
 		Verb("list", func(ochazuke.Ctx) ochazuke.Result { return result(loadTemplates()) },
 			"the template catalog: {id, label, data: {name, kind, path}, cells}").Rows("template").Fetch()
+	// project and template are thing nouns over their list verbs
+	// (thing_store.go). project create is project new under the core name
+	// (create ROOT/NAME and record it): the same handler, parameters and
+	// history.
+	listStore{Noun: "project", List: func(ochazuke.Ctx) ochazuke.Result { return result(load()) }}.define(r)
+	listStore{Noun: "template", List: func(ochazuke.Ctx) ochazuke.Result { return result(loadTemplates()) }}.define(r)
+	create := r.Operations["project.new"]
+	create.Verb, create.Standard, create.Unavailable = "create", "", ""
+	create.Description += " (as project.new)"
+	if create.App != nil {
+		create.Run = nil
+	}
+	r.Register(create)
 	// The verbs that write: the manifest, the hub links, clones and pulls.
-	setHistory(r, ochazuke.HistoryChange, "project.new", "project.adopt", "project.link", "project.unlink", "project.sync")
+	setHistory(r, ochazuke.HistoryChange, "project.new", "project.create", "project.adopt", "project.link", "project.unlink", "project.sync")
 	params := func(key string, p map[string]ochazuke.Parameter) {
 		op := r.Operations[r.CanonicalKey(key)]
 		op.Parameters = p
@@ -162,6 +175,7 @@ func (t *Tool) shell() (*ocli.Shell, error) {
 		"hub":      {Type: "string", Description: "the hub directory that links NAME -> DIR (default $O_PROJ_HUB, else ~/hub/o); none skips"},
 		"family":   {Type: "boolean", Description: "link the project into the o/oden family hub (default true); false skips"},
 	})
+	params("project.create", r.Operations["project.new"].Parameters)
 	params("project.adopt", map[string]ochazuke.Parameter{
 		"path": {Type: "string", Required: true, Description: "the repository's directory"},
 		"name": {Type: "string", Description: "the manifest name (default: the directory's base name)"},

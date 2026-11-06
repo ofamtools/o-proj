@@ -578,7 +578,8 @@ func TestCatalogDescribesProjectNoun(t *testing.T) {
 			verbs[v.Name] = v.Kind + "/" + v.Rows
 		}
 	}
-	want := map[string]string{"list": "application/project", "new": "application/", "adopt": "application/", "check": "application/", "templates": "application/", "open": "application/", "link": "application/", "unlink": "application/", "sync": "application/", "status": "application/"}
+	want := map[string]string{"list": "application/project", "new": "application/", "adopt": "application/", "check": "application/", "templates": "application/", "open": "application/", "link": "application/", "unlink": "application/", "sync": "application/", "status": "application/",
+		"create": "application/", "get": "application/", "set": "application/", "delete": "application/", "archive": "application/", "edit": "application/"}
 	if !maps.Equal(verbs, want) {
 		t.Fatalf("project verbs %v, want %v", verbs, want)
 	}
@@ -657,5 +658,30 @@ func TestProjectShellCheckAndTemplates(t *testing.T) {
 	var got []Template
 	if err := json.Unmarshal(out.Bytes(), &got); err != nil || len(got) != 2 || got[0].Name != "packed" || got[1].Name != "plain" {
 		t.Fatalf("templates %q %v", out, err)
+	}
+}
+
+// project and template are thing nouns over their list verbs: project
+// create is project new under the core name, get reads one row by its name,
+// and a core verb the tool does not do (set) is unavailable.
+func TestProjectIsAThingNoun(t *testing.T) {
+	tl, out, _ := tool(t)
+	root := filepath.Join(tl.Home, "proj")
+	if err := tl.Main([]string{"project", "create", "made", "--root", root, "--license", "none"}); err != nil {
+		t.Fatal(err, out)
+	}
+	if _, err := os.Stat(filepath.Join(root, "made", ".git")); err != nil {
+		t.Fatalf("project create did not make the repository: %v", err)
+	}
+	out.Reset()
+	if err := tl.Main([]string{"project", "get", "made"}); err != nil {
+		t.Fatal(err, out)
+	}
+	var got map[string]any
+	if err := json.Unmarshal(out.Bytes(), &got); err != nil || got["id"] != "made" {
+		t.Fatalf("project get: %v %q", err, out)
+	}
+	if err := tl.Main([]string{"project", "set", "made"}); err == nil {
+		t.Fatal("project set ran on a read-only noun")
 	}
 }
