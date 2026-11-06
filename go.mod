@@ -3,7 +3,7 @@ module ofam.dev/o-proj
 go 1.27.1
 
 require (
-	ofam.dev/ochazuke v0.90.0
+	ofam.dev/ochazuke v0.91.0
 	ofam.dev/oden v0.2.0
 )
 
