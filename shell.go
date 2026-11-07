@@ -144,11 +144,11 @@ func (t *Tool) shell() (*ocli.Shell, error) {
 		Verb("list", func(ochazuke.Ctx) ochazuke.Result { return result(loadTemplates()) },
 			"the template catalog: {id, label, data: {name, kind, path}, cells}").Rows("template").Fetch()
 	// project and template are thing nouns over their list verbs
-	// (thing_store.go). project create is project new under the core name
+	// ((Runtime.DefineListFacts)). project create is project new under the core name
 	// (create ROOT/NAME and record it): the same handler, parameters and
 	// history.
-	listStore{Noun: "project", List: func(ochazuke.Ctx) ochazuke.Result { return result(load()) }}.define(r)
-	listStore{Noun: "template", List: func(ochazuke.Ctx) ochazuke.Result { return result(loadTemplates()) }}.define(r)
+	r.DefineListFacts(ochazuke.ListFacts{Noun: "project", List: func(ochazuke.Ctx) ochazuke.Result { return result(load()) }})
+	r.DefineListFacts(ochazuke.ListFacts{Noun: "template", List: func(ochazuke.Ctx) ochazuke.Result { return result(loadTemplates()) }})
 	create := r.Operations["project.new"]
 	create.Verb, create.Standard, create.Unavailable = "create", "", ""
 	create.Description += " (as project.new)"
