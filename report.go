@@ -63,7 +63,7 @@ func (t *Tool) Status(ctx context.Context, args []string) error {
 	if dirty || clean {
 		filtered := report.Repos[:0]
 		for _, repo := range report.Repos {
-			if repo.Error != "" || dirty && repo.State == "dirty" || clean && repo.State == "clean" {
+			if repo.Error != "" || dirty && repo.Status == "dirty" || clean && repo.Status == "clean" {
 				filtered = append(filtered, repo)
 			}
 		}
@@ -131,7 +131,7 @@ func (t *Tool) statusRepos(dirs []string) ([]Repo, error) {
 
 func printReport(out io.Writer, report Report, home string) error {
 	w := tabwriter.NewWriter(out, 0, 4, 2, ' ', 0)
-	fmt.Fprintln(w, "REPO\tSTATE\tTRACKED\tCHANGED\tSTAGED\tUNSTAGED\tNEW\tBRANCH\tDIRECTORY")
+	fmt.Fprintln(w, "REPO\tSTATUS\tTRACKED\tCHANGED\tSTAGED\tUNSTAGED\tNEW\tBRANCH\tDIRECTORY")
 	for _, repo := range report.Repos {
 		path := repo.Path
 		if path == home {
@@ -140,11 +140,11 @@ func printReport(out io.Writer, report Report, home string) error {
 			path = "~/" + rel
 		}
 		if repo.Error != "" {
-			fmt.Fprintf(w, "%s\t%s\t-\t-\t-\t-\t-\t-\t%s\n", repo.Name, repo.State, path)
+			fmt.Fprintf(w, "%s\t%s\t-\t-\t-\t-\t-\t-\t%s\n", repo.Name, repo.Status, path)
 			fmt.Fprintf(w, "  %s\n", repo.Error)
 			continue
 		}
-		state := repo.State
+		state := repo.Status
 		if repo.Conflicts > 0 {
 			state = fmt.Sprintf("conflict(%d)", repo.Conflicts)
 		}

@@ -19,7 +19,7 @@ type Repo struct {
 
 type RepoStatus struct {
 	Repo
-	State     string `json:"state"`
+	Status    string `json:"status"`
 	Branch    string `json:"branch,omitempty"`
 	Upstream  string `json:"upstream,omitempty"`
 	Ahead     int    `json:"ahead,omitempty"`
@@ -57,7 +57,7 @@ func collect(ctx context.Context, repos []Repo) Report {
 		s := inspect(ctx, repo)
 		r.Repos = append(r.Repos, s)
 		r.Summary.Total++
-		switch s.State {
+		switch s.Status {
 		case "clean":
 			r.Summary.Clean++
 		case "dirty":
@@ -80,22 +80,22 @@ func inspect(ctx context.Context, repo Repo) RepoStatus {
 	s := RepoStatus{Repo: repo}
 	info, err := os.Stat(repo.Path)
 	if os.IsNotExist(err) {
-		s.State, s.Error = "missing", "directory does not exist"
+		s.Status, s.Error = "missing", "directory does not exist"
 		return s
 	}
 	if err != nil {
-		s.State, s.Error = "error", err.Error()
+		s.Status, s.Error = "error", err.Error()
 		return s
 	}
 	if !info.IsDir() {
-		s.State, s.Error = "not-repo", "not a directory"
+		s.Status, s.Error = "not-repo", "not a directory"
 		return s
 	}
 	if _, err := os.Stat(filepath.Join(repo.Path, ".git")); err != nil {
 		if os.IsNotExist(err) {
-			s.State, s.Error = "not-repo", "not a repository root (.git is absent)"
+			s.Status, s.Error = "not-repo", "not a repository root (.git is absent)"
 		} else {
-			s.State, s.Error = "error", err.Error()
+			s.Status, s.Error = "error", err.Error()
 		}
 		return s
 	}
@@ -110,12 +110,12 @@ func inspect(ctx context.Context, repo Repo) RepoStatus {
 		}
 	}
 	if err != nil {
-		s.State, s.Error = "error", err.Error()
+		s.Status, s.Error = "error", err.Error()
 		return s
 	}
-	s.State = "clean"
+	s.Status = "clean"
 	if s.Changed != 0 {
-		s.State = "dirty"
+		s.Status = "dirty"
 	}
 	return s
 }

@@ -56,7 +56,7 @@ func newRepo(t *testing.T) string {
 func TestStatusCountsPathsRatherThanStatusColumns(t *testing.T) {
 	dir := newRepo(t)
 	clean := inspect(context.Background(), Repo{Name: "example", Path: dir})
-	if clean.State != "clean" || clean.Tracked != 4 || clean.Changed != 0 || clean.Branch != "main" {
+	if clean.Status != "clean" || clean.Tracked != 4 || clean.Changed != 0 || clean.Branch != "main" {
 		t.Fatalf("clean: %+v", clean)
 	}
 	put(t, filepath.Join(dir, "tracked.txt"), "staged\n")
@@ -75,7 +75,7 @@ func TestStatusCountsPathsRatherThanStatusColumns(t *testing.T) {
 		t.Fatal(err)
 	}
 	s := inspect(context.Background(), Repo{Name: "example", Path: dir})
-	if s.State != "dirty" || s.Tracked != 4 || s.Changed != 5 || s.Staged != 2 || s.Unstaged != 2 || s.Untracked != 2 || s.Conflicts != 0 {
+	if s.Status != "dirty" || s.Tracked != 4 || s.Changed != 5 || s.Staged != 2 || s.Unstaged != 2 || s.Untracked != 2 || s.Conflicts != 0 {
 		t.Fatalf("dirty: %+v", s)
 	}
 	after, err := os.ReadFile(index)
@@ -89,7 +89,7 @@ func TestConflictsAndWorktrees(t *testing.T) {
 	worktree := filepath.Join(t.TempDir(), "linked")
 	runGit(t, dir, "worktree", "add", "-qb", "linked", worktree)
 	s := inspect(context.Background(), Repo{Name: "linked", Path: worktree})
-	if s.State != "clean" || s.Tracked != 4 || s.Branch != "linked" {
+	if s.Status != "clean" || s.Tracked != 4 || s.Branch != "linked" {
 		t.Fatalf("linked worktree: %+v", s)
 	}
 	put(t, filepath.Join(worktree, "tracked.txt"), "linked change\n")
@@ -103,7 +103,7 @@ func TestConflictsAndWorktrees(t *testing.T) {
 		t.Fatal("expected a merge conflict")
 	}
 	s = inspect(context.Background(), Repo{Name: "main", Path: dir})
-	if s.State != "dirty" || s.Tracked != 4 || s.Changed != 1 || s.Conflicts != 1 || s.Staged != 0 || s.Unstaged != 0 {
+	if s.Status != "dirty" || s.Tracked != 4 || s.Changed != 1 || s.Conflicts != 1 || s.Staged != 0 || s.Unstaged != 0 {
 		t.Fatalf("conflict: %+v", s)
 	}
 }
@@ -153,7 +153,7 @@ func TestFilteredReportRetainsErrorsAndFullSummary(t *testing.T) {
 	}
 	states := map[string]string{}
 	for _, repo := range rep.Repos {
-		states[repo.Path] = repo.State
+		states[repo.Path] = repo.Status
 	}
 	if states[dirty] != "dirty" || states[ordinary] != "not-repo" || states[missing] != "missing" || states[clean] != "" {
 		t.Fatalf("filter hid an error or included a clean repository: %+v", states)
@@ -174,7 +174,7 @@ func TestGitEnvironmentAndUnbornBranch(t *testing.T) {
 	t.Setenv("GIT_WORK_TREE", other)
 	t.Setenv("GIT_INDEX_FILE", filepath.Join(other, ".git", "index"))
 	s := inspect(context.Background(), Repo{Name: "fresh", Path: dir})
-	if s.State != "dirty" || s.Branch != "fresh" || s.Tracked != 1 || s.Staged != 1 || s.Changed != 1 {
+	if s.Status != "dirty" || s.Branch != "fresh" || s.Tracked != 1 || s.Staged != 1 || s.Changed != 1 {
 		t.Fatalf("unborn repository or Git environment isolation: %+v", s)
 	}
 }
@@ -210,7 +210,7 @@ func TestStatusAheadBehind(t *testing.T) {
 	runGit(t, upstream, "commit", "-qm", "more")
 	runGit(t, clone, "fetch", "-q")
 	s := inspect(context.Background(), Repo{Name: "c", Path: clone})
-	if s.State != "clean" || s.Branch != "main" || s.Upstream != "origin/main" || s.Behind != 1 || s.Ahead != 0 {
+	if s.Status != "clean" || s.Branch != "main" || s.Upstream != "origin/main" || s.Behind != 1 || s.Ahead != 0 {
 		t.Fatalf("behind: %+v", s)
 	}
 }

@@ -25,7 +25,7 @@ type SyncResult struct {
 	Dir      string `json:"dir"`
 	Action   string `json:"action"` // cloned, would-clone, missing, present
 	Link     string `json:"link,omitempty"`
-	State    string `json:"state,omitempty"` // clean, dirty, or a status error state
+	Status   string `json:"status,omitempty"` // clean, dirty, or a status error state
 	Changed  int    `json:"changed,omitempty"`
 	Upstream string `json:"upstream,omitempty"`
 	Ahead    int    `json:"ahead,omitempty"`
@@ -99,7 +99,7 @@ func (t *Tool) SyncEntries(ctx context.Context, names []string, opts SyncOptions
 	counts := map[string]int{}
 	for _, r := range results {
 		counts[r.Action]++
-		if r.State == "dirty" {
+		if r.Status == "dirty" {
 			counts["dirty"]++
 		}
 		if r.Behind > 0 && !r.Pulled {
@@ -157,11 +157,11 @@ func (t *Tool) syncEntry(ctx context.Context, e Entry, opts SyncOptions) SyncRes
 		}
 	}
 	s := inspect(ctx, Repo{Name: e.Name, Path: dir})
-	r.State, r.Changed, r.Upstream, r.Ahead, r.Behind = s.State, s.Changed, s.Upstream, s.Ahead, s.Behind
+	r.Status, r.Changed, r.Upstream, r.Ahead, r.Behind = s.Status, s.Changed, s.Upstream, s.Ahead, s.Behind
 	if s.Error != "" && r.Error == "" {
 		r.Error = s.Error
 	}
-	if opts.Pull && !opts.DryRun && r.Error == "" && s.State == "clean" && s.Behind > 0 && s.Ahead == 0 {
+	if opts.Pull && !opts.DryRun && r.Error == "" && s.Status == "clean" && s.Behind > 0 && s.Ahead == 0 {
 		if _, err := t.Run(dir, "git", "pull", "--quiet", "--ff-only"); err != nil {
 			r.Error = err.Error()
 		} else {
@@ -198,9 +198,9 @@ func syncLine(r SyncResult) string {
 			parts[len(parts)-1] = "missing " + r.Dir + " (clone failed)"
 		}
 	}
-	if r.State != "" {
-		state := r.State
-		if r.State == "dirty" {
+	if r.Status != "" {
+		state := r.Status
+		if r.Status == "dirty" {
 			state = fmt.Sprintf("dirty (%d changed)", r.Changed)
 		}
 		parts = append(parts, state)

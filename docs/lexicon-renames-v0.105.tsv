@@ -1,0 +1,5 @@
+kind	old	new	note
+operation	proj.project.status	proj.project.get {prop: status}	read-only value verb is a computed collection prop of the project noun ({repos, summary}); the o-proj status command is unchanged
+operation	proj.project.templates	proj.template.list	same rows as template list; the verb is removed (the o-proj templates command is unchanged)
+field	state (status and sync rows)	status	json key and Go field; reports print STATUS
+word	adopt, sync, template	(word list rows)	local rows in testdata/lexicon-words.tsv

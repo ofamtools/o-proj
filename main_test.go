@@ -578,7 +578,7 @@ func TestCatalogDescribesProjectNoun(t *testing.T) {
 			verbs[v.Name] = v.Kind + "/" + v.Rows
 		}
 	}
-	want := map[string]string{"list": "application/project", "new": "application/", "adopt": "application/", "check": "application/", "templates": "application/", "open": "application/", "link": "application/", "unlink": "application/", "sync": "application/", "status": "application/",
+	want := map[string]string{"list": "application/project", "new": "application/", "adopt": "application/", "check": "application/", "open": "application/", "link": "application/", "unlink": "application/", "sync": "application/",
 		"create": "application/", "get": "application/", "set": "application/", "delete": "application/", "archive": "application/", "edit": "application/"}
 	if !maps.Equal(verbs, want) {
 		t.Fatalf("project verbs %v, want %v", verbs, want)
@@ -647,16 +647,18 @@ func TestProjectShellCheckAndTemplates(t *testing.T) {
 		t.Fatalf("err %v", err)
 	}
 	out.Reset()
-	if err := tl.Main([]string{"project", "templates"}); err != nil || strings.TrimSpace(out.String()) != "[]" {
+	if err := tl.Main([]string{"template", "list"}); err != nil || strings.TrimSpace(out.String()) != "[]" {
 		t.Fatalf("templates %q %v", out, err)
 	}
 	catalog(t, tl)
 	out.Reset()
-	if err := tl.Main([]string{"project", "templates"}); err != nil {
+	if err := tl.Main([]string{"template", "list"}); err != nil {
 		t.Fatal(err)
 	}
-	var got []Template
-	if err := json.Unmarshal(out.Bytes(), &got); err != nil || len(got) != 2 || got[0].Name != "packed" || got[1].Name != "plain" {
+	var got []struct {
+		ID string `json:"id"`
+	}
+	if err := json.Unmarshal(out.Bytes(), &got); err != nil || len(got) != 2 || got[0].ID != "packed" || got[1].ID != "plain" {
 		t.Fatalf("templates %q %v", out, err)
 	}
 }

@@ -68,10 +68,10 @@ miso-notes   ~/proj/miso-notes   main    adopted  git@github.com:example/miso-no
 rice-cooker  ~/proj/rice-cooker  main    adopted  git@github.com:example/rice-cooker.git
 tea-shop     ~/proj/tea-shop     main    adopted  git@github.com:example/tea-shop.git
 $ o-proj status
-REPO         STATE  TRACKED  CHANGED  STAGED  UNSTAGED  NEW  BRANCH  DIRECTORY
-miso-notes   clean  1        0        0       0         0    main    ~/proj/miso-notes
-rice-cooker  dirty  1        1        0       1         0    main    ~/proj/rice-cooker
-tea-shop     clean  1        0        0       0         0    main    ~/proj/tea-shop
+REPO         STATUS  TRACKED  CHANGED  STAGED  UNSTAGED  NEW  BRANCH  DIRECTORY
+miso-notes   clean    1        0        0       0         0    main    ~/proj/miso-notes
+rice-cooker  dirty    1        1        0       1         0    main    ~/proj/rice-cooker
+tea-shop     clean    1        0        0       0         0    main    ~/proj/tea-shop
 
 3 directories: 1 dirty, 2 clean, 0 unavailable. Showing 3.
 3 tracked files; 1 changed paths (0 staged, 1 unstaged, 0 new, 0 conflicts).

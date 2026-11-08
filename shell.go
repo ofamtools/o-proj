@@ -98,7 +98,15 @@ func (t *Tool) shell() (*ocli.Shell, error) {
 		defer func() { t.Stdout = saved }()
 		return f()
 	}
-	r.Define("project").Columns(projectColumns...).
+	r.Define("project").Main().Props(ochazuke.PropSpec{Name: "status", ReadOnly: true, Subject: ochazuke.SubjectCollection,
+		Parameter: ochazuke.Parameter{Type: ochazuke.PropObject, Description: "read-only git status of every repository: {repos, summary}"},
+		Read: func(ochazuke.Ctx, ochazuke.Thing) (any, error) {
+			repos, err := t.statusRepos(nil)
+			if err != nil {
+				return nil, err
+			}
+			return collect(context.Background(), repos), nil
+		}}).Columns(projectColumns...).
 		Verb("list", func(ochazuke.Ctx) ochazuke.Result { return result(load()) },
 			"the manifest's repositories: {id, label, data: {name, url, path, branch, origin, dir}}").Rows("project").Fetch().
 		Verb("new", func(c ochazuke.Ctx) ochazuke.Result { return result(t.newFromArgs(c.Args)) },
@@ -120,14 +128,7 @@ func (t *Tool) shell() (*ocli.Shell, error) {
 			return result(quiet(func() (any, error) {
 				return t.SyncEntries(context.Background(), nil, SyncOptions{Hub: t.DefaultHub(), Fetch: !dry, Pull: pull, DryRun: dry})
 			}))
-		}, "clone missing repositories, link, fetch and report; pull fast-forwards clean ones: [{name, action, state, ahead, behind, ...}]").
-		Verb("status", func(ochazuke.Ctx) ochazuke.Result {
-			repos, err := t.statusRepos(nil)
-			if err != nil {
-				return ochazuke.Failed(err)
-			}
-			return ochazuke.Done(collect(context.Background(), repos))
-		}, "read-only git status of every repository: {repos, summary}").Fetch().
+		}, "clone missing repositories, link, fetch and report; pull fast-forwards clean ones: [{name, action, status, ahead, behind, ...}]").
 		Verb("check", func(c ochazuke.Ctx) ochazuke.Result {
 			dir, top, err := t.guard(ochazuke.StringArg(c.Args, "dir", "."), t.DefaultRoot())
 			if err != nil {
@@ -135,14 +136,6 @@ func (t *Tool) shell() (*ocli.Shell, error) {
 			}
 			return ochazuke.Done(map[string]string{"dir": dir, "toplevel": top})
 		}, "refuse a directory whose git toplevel is $HOME or above the project root").Fetch().
-		Verb("templates", func(ochazuke.Ctx) ochazuke.Result {
-			catalog, err := t.Templates()
-			if catalog == nil {
-				catalog = []Template{}
-			}
-			return result(catalog, err)
-		},
-			"the template catalog: {name, kind, path} (template list has the same as rows)").Fetch().
 		Verb("open", func(c ochazuke.Ctx) ochazuke.Result {
 			d, ok := c.Instance.Data.(Row)
 			if c.Instance.Noun != "project" || !ok {

@@ -43,11 +43,11 @@ func TestEveryVerbDeclaresItsHistory(t *testing.T) {
 	// The 11 verbs the tool names, project create (project new under the core
 	// name), and the other core verbs of the two thing nouns: get, set,
 	// delete, archive and edit, and for template also create.
-	if n != 23 {
-		t.Fatalf("the catalog has %d o-proj verbs, want 23", n)
+	if n != 21 {
+		t.Fatalf("the catalog has %d o-proj verbs, want 21", n)
 	}
 	for key, want := range map[string]string{
-		"project.list": ochazuke.HistoryFetch, "project.status": ochazuke.HistoryFetch, "template.list": ochazuke.HistoryFetch,
+		"project.list": ochazuke.HistoryFetch, "template.list": ochazuke.HistoryFetch,
 		"project.new": ochazuke.HistoryChange, "project.create": ochazuke.HistoryChange, "project.sync": ochazuke.HistoryChange, "project.link": ochazuke.HistoryChange,
 	} {
 		if got := ops.At(ochazuke.Key(key)).HistoryKind; got != want {
