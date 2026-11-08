@@ -35,8 +35,8 @@ func TestEveryVerbDeclaresItsHistory(t *testing.T) {
 				continue
 			}
 			n++
-			if v.History == "" || ops[key].HistoryKind == "" || v.History != ops[key].HistoryKind {
-				t.Errorf("catalog verb %s: history %q, declared %q", key, v.History, ops[key].HistoryKind)
+			if v.History == "" || ops.At(ochazuke.Key(key)).HistoryKind == "" || v.History != ops.At(ochazuke.Key(key)).HistoryKind {
+				t.Errorf("catalog verb %s: history %q, declared %q", key, v.History, ops.At(ochazuke.Key(key)).HistoryKind)
 			}
 		}
 	}
@@ -50,8 +50,30 @@ func TestEveryVerbDeclaresItsHistory(t *testing.T) {
 		"project.list": ochazuke.HistoryFetch, "project.status": ochazuke.HistoryFetch, "template.list": ochazuke.HistoryFetch,
 		"project.new": ochazuke.HistoryChange, "project.create": ochazuke.HistoryChange, "project.sync": ochazuke.HistoryChange, "project.link": ochazuke.HistoryChange,
 	} {
-		if got := ops[key].HistoryKind; got != want {
+		if got := ops.At(ochazuke.Key(key)).HistoryKind; got != want {
 			t.Errorf("%s: %q, want %q", key, got, want)
 		}
 	}
+}
+
+func TestCatalogDeclaresSingularNamespace(t *testing.T) {
+	var doc ocli.CatalogDoc
+	if err := json.Unmarshal([]byte(catalogOut(t)), &doc); err != nil {
+		t.Fatal(err)
+	}
+	if doc.Namespace != "proj" || ochazuke.DefaultNamespace != "proj" {
+		t.Fatalf("catalog namespace %q, default %q; want proj", doc.Namespace, ochazuke.DefaultNamespace)
+	}
+	if got, err := ocli.CatalogNamespace(doc, "o-proj"); err != nil || got != "proj" {
+		t.Fatal(got, err)
+	}
+}
+
+func catalogOut(t *testing.T) string {
+	t.Helper()
+	tl, out, _ := tool(t)
+	if err := tl.Main([]string{"catalog"}); err != nil {
+		t.Fatal(err)
+	}
+	return out.String()
 }

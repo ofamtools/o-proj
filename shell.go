@@ -35,6 +35,16 @@ type templateRow struct {
 	Cells []string `json:"cells,omitempty"`
 }
 
+// Namespace is the singular namespace o-proj declares (lexicon plan): its
+// operations are proj.<noun>.<verb> and a host mounts its catalog under it.
+const Namespace = "proj"
+
+func init() {
+	if err := ochazuke.DeclareNamespace(Namespace); err != nil {
+		panic(err)
+	}
+}
+
 // shell is the NOUN VERB shell over a runtime holding the project noun.
 func (t *Tool) shell() (*ocli.Shell, error) {
 	r := ochazuke.NewRuntime()
@@ -149,19 +159,19 @@ func (t *Tool) shell() (*ocli.Shell, error) {
 	// history.
 	r.DefineListFacts(ochazuke.ListFacts{Noun: "project", List: func(ochazuke.Ctx) ochazuke.Result { return result(load()) }})
 	r.DefineListFacts(ochazuke.ListFacts{Noun: "template", List: func(ochazuke.Ctx) ochazuke.Result { return result(loadTemplates()) }})
-	create := r.Operations["project.new"]
-	create.Verb, create.Standard, create.Unavailable = "create", "", ""
+	create := r.Operations.At("project.new")
+	create.Key, create.Standard, create.Unavailable = ochazuke.KeyOf("project", "create"), "", ""
 	create.Description += " (as project.new)"
-	if create.App != nil {
+	if create.AppHandler != nil {
 		create.Run = nil
 	}
 	r.Register(create)
 	// The verbs that write: the manifest, the hub links, clones and pulls.
 	setHistory(r, ochazuke.HistoryChange, "project.new", "project.create", "project.adopt", "project.link", "project.unlink", "project.sync")
 	params := func(key string, p map[string]ochazuke.Parameter) {
-		op := r.Operations[r.CanonicalKey(key)]
+		op := r.Operations.At(ochazuke.Key(r.CanonicalKey(key)))
 		op.Parameters = p
-		r.Operations[r.CanonicalKey(key)] = op
+		r.Operations.Set(op)
 	}
 	params("project.new", map[string]ochazuke.Parameter{
 		"name":     {Type: "string", Required: true, Description: "the project directory's name under root"},
@@ -175,7 +185,7 @@ func (t *Tool) shell() (*ocli.Shell, error) {
 		"hub":      {Type: "string", Description: "the hub directory that links NAME -> DIR (default $O_PROJ_HUB, else ~/hub/o); none skips"},
 		"family":   {Type: "boolean", Description: "link the project into the o/oden family hub (default true); false skips"},
 	})
-	params("project.create", r.Operations["project.new"].Parameters)
+	params("project.create", r.Operations.At("project.new").Parameters)
 	params("project.adopt", map[string]ochazuke.Parameter{
 		"path": {Type: "string", Required: true, Description: "the repository's directory"},
 		"name": {Type: "string", Description: "the manifest name (default: the directory's base name)"},
@@ -245,11 +255,11 @@ func (t *Tool) newFromArgs(args ochazuke.Arguments) (map[string]string, error) {
 // change. An unknown key panics, so a renamed verb is renamed here too.
 func setHistory(r *ochazuke.Runtime, kind string, keys ...string) {
 	for _, key := range keys {
-		op, ok := r.Operations[r.CanonicalKey(key)]
+		op, ok := r.Operations.Find(ochazuke.Key(r.CanonicalKey(key)))
 		if !ok {
 			panic("setHistory: no operation " + key)
 		}
 		op.HistoryKind = kind
-		r.Operations[r.CanonicalKey(key)] = op
+		r.Operations.Set(op)
 	}
 }
