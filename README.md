@@ -29,7 +29,7 @@ gofmt -l . && go vet ./... && go test -race ./...
 go build -o ~/bin/o-proj .
 ```
 
-ochazuke (`v0.28.0`) and oden (`v0.1.1`) are required at their tags. An untracked `go.work` (`go work init . && go work use ../oden ../ochazuke`) builds against the sibling checkouts; `GOWORK=off` builds from the tags as a fresh clone does.
+ochazuke (`v0.134.0`) and oden (`v0.5.1`) are required at their tags. An untracked `go.work` (`go work init . && go work use ../oden ../ochazuke`) builds against the sibling checkouts; `GOWORK=off` builds from the tags as a fresh clone does.
 
 ## Usage
 
@@ -44,7 +44,8 @@ o proj sync [NAME...] [--pull] [--dry-run]   # clone, link, fetch, report dirty/
 o proj status [DIR...] [-d|--dirty] [-c|--clean] [-j|--json]
 o proj seed [--mtm-json FILE] [--inventory FILE] [--hub DIR] [--dry-run]
 o proj check [DIR]                      # refuse a directory whose git toplevel is $HOME or above ~/proj
-o proj templates
+o proj templates                        # template list
+o proj project VERB ...                 # every command above is also a project verb; get, show, set, archive, restore, delete, duplicate, yank and history too
 o proj catalog                          # the project and template nouns, for nabe
 ```
 
@@ -97,6 +98,8 @@ dry run: 4 repositories: 0 cloned, 0 to clone, 0 missing, 1 dirty, 0 behind, 0 p
 $ o-proj check ~
 o-proj: STOP: /private/tmp/oproj.uK3x/home is not in a git repository; create it with o-proj new NAME (or --existing)
 ```
+
+The commands above keep their flag syntax and output (mtm reads `o-proj list`); each is also a verb of the `project` noun (`new`, `adopt`, `list`, `link`, `unlink`, `clone`, `sync`, `seed`, `check`; `status` is its read-only `status` prop; `templates` is `template list`), so the palette, MCP and a host reach them. `project` is a record noun over the manifest: `get`, `show`, `set`, `archive` (hides the row from `project list`; `--archived true` shows it), `restore`, `duplicate`, `yank`, `history` and `delete` (drops the manifest entry only: the directory, the hub link and any GitHub repository stay).
 
 `o proj project list` and `o proj template list` answer rows (`{id, label, data, cells}`) that a host draws as tables: the catalog declares each noun's `columns` and every row carries one cell per column.
 

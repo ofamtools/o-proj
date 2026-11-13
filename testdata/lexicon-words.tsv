@@ -369,7 +369,7 @@ import	action	seed
 in	action	seed	
 increase	action	seed	
 indent	action	seed	
-index	prop	seed	
+index	noun+prop	seed	
 info	prop	seed	
 init	action	seed	
 input	noun	seed	
@@ -909,11 +909,45 @@ zoom	action	seed
 zoom-in	action	seed	
 zoom-out	action	seed	
 zoom-reset	action	seed	
-first	action	seed	ochazuke v0.110
-hide	action	seed	ochazuke v0.110
-last	action	seed	ochazuke v0.110
-move-down	action	seed	ochazuke v0.110
-move-up	action	seed	ochazuke v0.110
-referrer	noun	seed	ochazuke v0.110
-related	noun	seed	ochazuke v0.110
-related-section	noun	seed	ochazuke v0.110
+first	action	seed	
+hide	action	seed	
+last	action	seed	
+move-down	action	seed	
+move-up	action	seed	
+referrer	noun	seed	
+related	noun	seed	
+related-section	noun	seed	
+act	action	yes	act on the focused thing: pick one of its verbs (focus.act)
+bind-start	action	seed	
+bind-finish	action	seed	
+bind-drop	action	seed	
+bind-literal	action	seed	
+bind-cancel	action	seed	
+columns	action	seed	
+look	action	yes	och-rail-focus: ochazuke.rail.look sets the rail's look (rail.look: full or float)
+rail	noun	yes	och-rail-focus: the rail region beside a page's main area (ochazuke.rail)
+show-archived	action	seed	
+form-item	noun	yes	pp-library
+form-read-only	noun	yes	pp-library
+group-fold	action	yes	fold or unfold a collection group
+item-add	action	yes	pp-library: list field rows (record_list.go)
+item-delete	action	yes	pp-library: list field rows (record_list.go)
+item-edit	action	yes	pp-library: list field rows (record_list.go)
+item-first	action	yes	pp-library: list field rows (record_list.go)
+item-last	action	yes	pp-library: list field rows (record_list.go)
+item-move-down	action	yes	pp-library: list field rows (record_list.go)
+item-move-up	action	yes	pp-library: list field rows (record_list.go)
+item-next	action	yes	pp-library: list field rows (record_list.go)
+item-previous	action	yes	pp-library: list field rows (record_list.go)
+item-yank	action	yes	pp-library: list field rows (record_list.go)
+next-scope	action	seed	
+noun-browser	noun	seed	
+open-with	action	seed	
+opener	noun	yes	the opener table (open.openers) and the OS opener
+previous-scope	action	seed	
+relation-kind	noun	yes	the declared rules of a relation kind (ochazuke.relation-kind)
+resize	action	yes	och-rail-focus: ochazuke.rail.resize sets the rail's width (rail.width)
+thing	noun	ua11	the registered thing walk graph picker
+walk	action	ua11	follow a thing's values and relations in a picker
+clone	action	yes	tools-mermaid-proj
+seed	action	yes	tools-mermaid-proj

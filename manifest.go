@@ -30,6 +30,9 @@ type Entry struct {
 	Path   string `json:"path"` // ~ for the home directory
 	Branch string `json:"branch,omitempty"`
 	Origin string `json:"origin,omitempty"`
+	// Archived hides the repository from project lists (project archive,
+	// project restore); sync, clone and link still treat it as recorded.
+	Archived bool `json:"archived,omitempty"`
 }
 
 // Row is an entry as list prints it: the entry plus its path expanded for

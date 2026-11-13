@@ -40,11 +40,10 @@ func TestEveryVerbDeclaresItsHistory(t *testing.T) {
 			}
 		}
 	}
-	// The 11 verbs the tool names, project create (project new under the core
-	// name), and the other core verbs of the two thing nouns: get, set,
-	// delete, archive and edit, and for template also create.
-	if n != 21 {
-		t.Fatalf("the catalog has %d o-proj verbs, want 21", n)
+	// The 13 verbs the tool names, project create (project new under the core
+	// name), and the standard verbs the two nouns get over their stores.
+	if n != 35 {
+		t.Fatalf("the catalog has %d o-proj verbs, want 35", n)
 	}
 	for key, want := range map[string]string{
 		"project.list": ochazuke.HistoryFetch, "template.list": ochazuke.HistoryFetch,

@@ -20,16 +20,17 @@ Keep planning work in the family planning workspace, separate from this reposito
 | `status` (moved from o-family): the report and its git inspection | `report.go`, `status.go` |
 | `seed`: the one-time import into the manifest | `seed.go` |
 | The mtm project `new` asks for, through mtm's CLI | `mtm.go` |
-| The ochazuke runtime: the `project` and `template` nouns, `catalog` | `shell.go` |
+| The ochazuke runtime: the `project` and `template` nouns, their verbs, `catalog` | `shell.go` |
+| The project store over the manifest: props, get, list, create, patch (archive), delete | `store.go` |
 | Tables: each noun's catalog columns and its rows' cells (license and hub-link detection) | `table.go` |
 | Templates, licenses | `templates.go`, `license.go` |
 
 ## Invariants
 
 - Record first: once the repository exists, `new` never fails because of the hub link, the o-inventory hook or mtm; each is one output line.
-- The manifest is written only by `new`, `adopt` and `seed`; an entry is never rewritten by them. Paths are stored with `~`.
+- The manifest is written only by `new`, `adopt` and `seed` (an entry is never rewritten by them) and by the project store (`set`, `archive`, `restore`, `delete`). Paths are stored with `~`.
 - Links and sync never replace anything already at a hub name, never touch a dirty repository's files, and pull only with `--ff-only`. `--dry-run` writes nothing (no clone, link, fetch or pull).
 - Tests run in a temp home with a temp manifest; no test reaches the real hub, mtm or GitHub (gh calls are recorded; mtm is a fake script).
 - Every commit: `gofmt -l . && go vet ./... && go test -race ./...` green, `go run . catalog` answers, `o proj check`. No amends.
 
-Build: `go build -o ~/bin/o-proj .`. ochazuke (`v0.28.0`) and oden (`v0.1.1`) are required at their tags; an untracked `go.work` (`go work init . && go work use ../oden ../ochazuke`) builds against the sibling checkouts, and `GOWORK=off` builds from the tags as a fresh clone does.
+Build: `go build -o ~/bin/o-proj .`. ochazuke (`v0.134.0`) and oden (`v0.5.1`) are required at their tags; an untracked `go.work` (`go work init . && go work use ../oden ../ochazuke`) builds against the sibling checkouts, and `GOWORK=off` builds from the tags as a fresh clone does.

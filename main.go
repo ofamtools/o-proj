@@ -22,8 +22,13 @@
 //	o-proj project VERB [ARG...] [--ARG VALUE] [--target ID] [--json '{...}']
 //	o-proj catalog
 //
-// project is the same work as an ochazuke noun (shell.go), whose verbs print
-// JSON, and catalog describes it for a host that mounts this bin. There is
+// project is the same work as an ochazuke noun (shell.go): every command above
+// but check's guard is also a verb of it (new, adopt, list, link, unlink,
+// clone, sync, seed, check; status is its status prop, templates is template
+// list), and it is a record noun over the manifest (store.go) with get, set,
+// archive, restore, delete and the other standard verbs. The commands keep
+// their flag syntax and output (mtm reads o-proj list); the verbs print JSON,
+// and catalog describes them for a host that mounts this bin. There is
 // no daemon and no TUI, and o-proj never opens mtm's database: mtm is
 // reached only through its command line.
 package main

@@ -579,7 +579,9 @@ func TestCatalogDescribesProjectNoun(t *testing.T) {
 		}
 	}
 	want := map[string]string{"list": "application/project", "new": "application/", "adopt": "application/", "check": "application/", "open": "application/", "link": "application/", "unlink": "application/", "sync": "application/",
-		"create": "application/", "get": "application/", "set": "application/", "delete": "application/", "archive": "application/", "edit": "application/"}
+		"create": "application/", "get": "application/", "set": "application/", "delete": "application/", "archive": "application/", "edit": "application/",
+		"clone": "application/", "seed": "application/", "show": "application/", "yank": "application/", "restore": "application/", "duplicate": "application/",
+		"history": "application/ochazuke.history-entry", "watch": "application/", "reveal": "application/", "open-with": "application/", "yank-path": "application/"}
 	if !maps.Equal(verbs, want) {
 		t.Fatalf("project verbs %v, want %v", verbs, want)
 	}
@@ -663,10 +665,11 @@ func TestProjectShellCheckAndTemplates(t *testing.T) {
 	}
 }
 
-// project and template are thing nouns over their list verbs: project
-// create is project new under the core name, get reads one row by its name,
-// and a core verb the tool does not do (set) is unavailable.
-func TestProjectIsAThingNoun(t *testing.T) {
+// project is a record noun over the manifest: create is project new under
+// the core name, get reads one row by its name, set writes the archive role,
+// archive hides the row from project list, and delete drops the manifest
+// entry only.
+func TestProjectIsARecordNoun(t *testing.T) {
 	tl, out, _ := tool(t)
 	root := filepath.Join(tl.Home, "proj")
 	if err := tl.Main([]string{"project", "create", "made", "--root", root, "--license", "none"}); err != nil {
@@ -675,15 +678,86 @@ func TestProjectIsAThingNoun(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(root, "made", ".git")); err != nil {
 		t.Fatalf("project create did not make the repository: %v", err)
 	}
+	listed := func(args ...string) []string {
+		out.Reset()
+		if err := tl.Main(append([]string{"project", "list", "--json", "{}"}, args...)); err != nil {
+			t.Fatal(err, out)
+		}
+		var rows []projectRow
+		if err := json.Unmarshal(out.Bytes(), &rows); err != nil {
+			t.Fatal(err, out)
+		}
+		var ids []string
+		for _, r := range rows {
+			ids = append(ids, r.ID)
+		}
+		return ids
+	}
 	out.Reset()
 	if err := tl.Main([]string{"project", "get", "made"}); err != nil {
 		t.Fatal(err, out)
 	}
 	var got map[string]any
-	if err := json.Unmarshal(out.Bytes(), &got); err != nil || got["id"] != "made" {
+	if err := json.Unmarshal(out.Bytes(), &got); err != nil || got["name"] != "made" || got["archived"] != false {
 		t.Fatalf("project get: %v %q", err, out)
 	}
-	if err := tl.Main([]string{"project", "set", "made"}); err == nil {
-		t.Fatal("project set ran on a read-only noun")
+	if err := tl.Main([]string{"project", "archive", "made", "--yes"}); err != nil {
+		t.Fatal(err, out)
+	}
+	if ids := listed(); len(ids) != 0 {
+		t.Fatalf("archived project listed: %v", ids)
+	}
+	if ids := listed("--archived", "true"); len(ids) != 1 {
+		t.Fatalf("project list --archived: %v", ids)
+	}
+	if err := tl.Main([]string{"project", "restore", "made"}); err != nil {
+		t.Fatal(err, out)
+	}
+	if ids := listed(); len(ids) != 1 {
+		t.Fatalf("restored project missing: %v", ids)
+	}
+	if err := tl.Main([]string{"project", "delete", "made", "--yes"}); err != nil {
+		t.Fatal(err, out)
+	}
+	if ids := listed("--archived", "true"); len(ids) != 0 {
+		t.Fatalf("deleted project listed: %v", ids)
+	}
+	if _, err := os.Stat(filepath.Join(root, "made", ".git")); err != nil {
+		t.Fatalf("project delete removed the repository: %v", err)
+	}
+}
+
+// clone and seed are project verbs (the commands of the same names run the
+// same handlers): clone reports a missing repository on a dry run, seed adds
+// a hub link's repository to the manifest.
+func TestProjectCloneAndSeedVerbs(t *testing.T) {
+	tl, out, _ := tool(t)
+	hub := filepath.Join(tl.Home, "hub", "o")
+	dir := filepath.Join(tl.Home, "proj", "linked")
+	for _, d := range []string{hub, dir} {
+		if err := os.MkdirAll(d, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.Symlink(dir, filepath.Join(hub, "linked")); err != nil {
+		t.Fatal(err)
+	}
+	if err := tl.Main([]string{"project", "seed", "--hub", hub, "--inventory", "none", "--json", "{}"}); err != nil {
+		t.Fatal(err, out)
+	}
+	var seeded SeedResult
+	if err := json.Unmarshal(out.Bytes(), &seeded); err != nil || len(seeded.Added) != 1 || seeded.Added[0].Name != "linked" {
+		t.Fatalf("seed %q %v", out, err)
+	}
+	if err := os.RemoveAll(dir); err != nil {
+		t.Fatal(err)
+	}
+	out.Reset()
+	if err := tl.Main([]string{"project", "clone", "linked", "--dry_run", "true", "--hub", "none"}); err != nil {
+		t.Fatal(err, out)
+	}
+	var results []SyncResult
+	if err := json.Unmarshal(out.Bytes(), &results); err != nil || len(results) != 1 || results[0].Action == "present" {
+		t.Fatalf("clone %q %v", out, err)
 	}
 }

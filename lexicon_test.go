@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"ofam.dev/ochazuke/lexiconcheck"
+	"ofam.dev/ochazuke/scaffoldcheck"
 )
 
 // o-proj's registered operations are held to the lexicon's naming rules
@@ -49,4 +50,12 @@ func (t *Tool) mustShell(tt *testing.T) *ocli.Shell {
 		tt.Fatal(err)
 	}
 	return sh
+}
+
+// The project noun is served by the generic scaffold from its declaration:
+// a label, the archive role, the standard verbs and their keys (an empty
+// baseline: nothing is excused).
+func TestProjectScaffold(t *testing.T) {
+	tl, _, _ := tool(t)
+	scaffoldcheck.Check(t, scaffoldcheck.Config{Runtime: tl.mustShell(t).Runtime, Baseline: "testdata/scaffoldcheck.txt"})
 }
