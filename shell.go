@@ -237,6 +237,8 @@ func (t *Tool) shell() (*ocli.Shell, error) {
 	params("project.check", map[string]ochazuke.Parameter{
 		"dir": {Type: "string", Description: "the directory to check (default the working directory)"},
 	})
+	loadDefaultBindings(r)
+
 	sh := ocli.New(r, "o-proj", os.Stdin, t.Stdout, t.Stderr)
 	sh.Usage = ocli.DefaultUsage(t.Prog)
 	sh.Reveal = func(string) error {
