@@ -3,7 +3,6 @@
   "bindings": [
     {"context": "project/normal", "bindings": [
       {"key": "a", "action": "project.adopt", "hidden": true},
-      {"key": "d a", "action": "project.archive", "hidden": true},
       {"key": "b", "action": "project.check", "hidden": true},
       {"key": "c", "action": "project.clone", "hidden": true},
       {"key": "g d", "action": "project.duplicate", "hidden": true},
@@ -15,7 +14,6 @@
       {"key": "e", "action": "project.new", "hidden": true},
       {"key": "g F", "action": "project.open", "hidden": true},
       {"key": "g X", "action": "project.open-with", "hidden": true},
-      {"key": "d r", "action": "project.restore", "hidden": true},
       {"key": "R", "action": "project.reveal", "hidden": true},
       {"key": "f", "action": "project.seed", "hidden": true},
       {"key": "*", "action": "project.set", "hidden": true},

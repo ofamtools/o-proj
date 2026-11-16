@@ -21,7 +21,7 @@ Keep planning work in the family planning workspace, separate from this reposito
 | `seed`: the one-time import into the manifest | `seed.go` |
 | The mtm project `new` asks for, through mtm's CLI | `mtm.go` |
 | The ochazuke runtime: the `project` and `template` nouns, their verbs, `catalog` | `shell.go` |
-| Hidden default key rows as data (the run-3 key picker's), loaded after every verb is registered | `bindings.go`, `bindings.json` |
+| Hidden default key rows as data (the run-3 key picker's), loaded after every verb is registered; `TestRules` (`rules_test.go`, `testdata/rules/places.json`) runs ochazuke's hiddenkeys over them | `bindings.go`, `bindings.json` |
 | The project store over the manifest: props, get, list, create, patch (archive), delete | `store.go` |
 | Tables: each noun's catalog columns and its rows' cells (license and hub-link detection) | `table.go` |
 | Templates, licenses | `templates.go`, `license.go` |
