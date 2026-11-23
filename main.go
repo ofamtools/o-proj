@@ -47,7 +47,6 @@ import (
 	"strings"
 	"time"
 
-	ocli "ofam.dev/ochazuke/cli"
 	"ofam.dev/oden"
 )
 
@@ -138,29 +137,9 @@ func lookup(env []string, key string) string {
 	return ""
 }
 
-// Main runs the command word with oden.
+// Main runs the command word with oden via ochazuke/cli.
 func (t *Tool) Main(args []string) error {
-	app := oden.New("o-proj", args, oden.WithBuiltins(), oden.WithStdio(os.Stdin, t.Stdout, t.Stderr), oden.WithEnv(t.Env))
-	ctx := context.Background()
-	app.Add(
-		oden.Command{Name: "new", Summary: "create ROOT/NAME, git init it, verify, commit, record it in the manifest, link it, ask mtm for a work project", Run: func(_ context.Context, a []string) error { return t.New(a) }},
-		oden.Command{Name: "adopt", Summary: "record an existing repository (PATH) in the manifest and link it; its files are not touched", Run: func(_ context.Context, a []string) error { return t.Adopt(a) }},
-		oden.Command{Name: "list", Summary: "the manifest's repositories (JSON; --table for people)", Run: func(_ context.Context, a []string) error { return t.List(a) }},
-		oden.Command{Name: "link", Summary: "link one repository (NAME) or every one (--all) from the hub, ~/hub/o/NAME -> DIR", Run: func(_ context.Context, a []string) error { return t.Link(a) }},
-		oden.Command{Name: "unlink", Summary: "remove the hub link of one repository (NAME) or of every one (--all)", Run: func(_ context.Context, a []string) error { return t.Unlink(a) }},
-		oden.Command{Name: "clone", Summary: "clone the manifest's repositories missing on this machine, then link them", Run: func(_ context.Context, a []string) error { return t.Clone(ctx, a) }},
-		oden.Command{Name: "sync", Summary: "clone missing repositories, recreate links, fetch and report dirty/behind; --pull fast-forwards clean ones", Run: func(_ context.Context, a []string) error { return t.Sync(ctx, a) }},
-		oden.Command{Name: "status", Summary: "read-only git status of the manifest's repositories (or DIRs): dirty, clean, unavailable", Run: func(_ context.Context, a []string) error { return t.Status(ctx, a) }},
-		oden.Command{Name: "seed", Summary: "import repositories into the manifest from hub links, o-inventory's repos.json and an o-proj list file", Run: func(_ context.Context, a []string) error { return t.Seed(a) }},
-		oden.Command{Name: "check", Summary: "refuse a directory whose git toplevel is $HOME or above the project root", Run: func(_ context.Context, a []string) error { return t.Check(a) }},
-		oden.Command{Name: "templates", Summary: "the template catalog: name, kind (dir|tar.gz), path; .tmpl files render with Go text/template", Run: func(_ context.Context, a []string) error { return t.ListTemplates(a) }},
-	)
-	sh, err := t.shell()
-	if err != nil {
-		return err
-	}
-	ocli.Mount(app, sh)
-	return app.Run(ctx)
+	return t.app(args).Run(context.Background())
 }
 
 // parse parses flags that may come before or after the positional words.

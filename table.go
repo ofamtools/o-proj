@@ -6,34 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"ofam.dev/ochazuke"
 )
-
-// Tables: the project and template nouns declare catalog columns (the
-// runtime noun's Columns, so a host such as nabe draws their lists as
-// tables), and every row of project list and template list carries its
-// cells in that order (ochazuke.ListItem.Cells and the row's cells). The
-// columns are declared here once; a column change is a cells change in the
-// same place.
-
-// projectColumns are project list's columns: name never drops; origin
-// drops first when narrow, then license, linked, path.
-var projectColumns = []ochazuke.Column{
-	{Title: "name", Min: 10},
-	{Title: "origin", Priority: 4},
-	{Title: "path", Priority: 1},
-	{Title: "license", Priority: 3},
-	{Title: "linked", Priority: 2},
-}
-
-// templateColumns are template list's columns: name, kind (dir or
-// tar.gz), path.
-var templateColumns = []ochazuke.Column{
-	{Title: "name", Min: 10},
-	{Title: "kind", Priority: 2},
-	{Title: "path", Priority: 1},
-}
 
 // projectCells are a manifest row's cells: name, origin, path (with ~),
 // license (licenseOf) and linked (linkedIn the default hub).

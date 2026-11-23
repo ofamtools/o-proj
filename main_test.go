@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
-	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,6 +12,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"ofam.dev/oden"
 )
 
 // tool is a Tool over a temp home: git runs with a fixed identity and no
@@ -545,219 +546,136 @@ func TestProgName(t *testing.T) {
 	}
 }
 
-func TestCatalogDescribesProjectNoun(t *testing.T) {
+func TestExtensionCatalogQueryCapabilities(t *testing.T) {
 	tl, out, _ := tool(t)
 	if err := tl.Main([]string{"catalog"}); err != nil {
-		t.Fatal(err)
-	}
-	var doc struct {
-		Schema int    `json:"schema"`
-		Name   string `json:"name"`
-		Nouns  []struct {
-			Name  string `json:"name"`
-			Verbs []struct {
-				Name   string                     `json:"name"`
-				Kind   string                     `json:"kind"`
-				Rows   string                     `json:"rows"`
-				Params map[string]json.RawMessage `json:"params"`
-			} `json:"verbs"`
-		} `json:"nouns"`
-	}
-	if err := json.Unmarshal(out.Bytes(), &doc); err != nil {
 		t.Fatal(err, out)
 	}
-	if doc.Schema != 1 || doc.Name != "o-proj" {
-		t.Fatalf("schema %d name %q", doc.Schema, doc.Name)
+	var mf oden.ExtManifest
+	if err := json.Unmarshal(out.Bytes(), &mf); err != nil {
+		t.Fatal(err, out)
 	}
-	verbs := map[string]string{}
-	for _, n := range doc.Nouns {
-		if n.Name != "project" {
-			continue
-		}
-		for _, v := range n.Verbs {
-			verbs[v.Name] = v.Kind + "/" + v.Rows
-		}
+	if mf.Name != "o-proj" || mf.Version != Version || len(mf.Schemas) != 2 || mf.Schemas[0].Kind != KindProject {
+		t.Fatalf("unexpected manifest: %+v", mf)
 	}
-	want := map[string]string{"list": "application/project", "new": "application/", "adopt": "application/", "check": "application/", "open": "application/", "link": "application/", "unlink": "application/", "sync": "application/",
-		"create": "application/", "get": "application/", "set": "application/", "delete": "application/", "archive": "application/", "edit": "application/",
-		"clone": "application/", "seed": "application/", "show": "application/", "yank": "application/", "restore": "application/", "duplicate": "application/",
-		"history": "application/ochazuke.history-entry", "watch": "application/", "reveal": "application/", "open-with": "application/", "yank-path": "application/"}
-	if !maps.Equal(verbs, want) {
-		t.Fatalf("project verbs %v, want %v", verbs, want)
-	}
-}
 
-func TestProjectShellNewListOpen(t *testing.T) {
-	tl, out, _ := tool(t)
+	out.Reset()
+	if err := tl.Main([]string{"capabilities", "--json"}); err != nil {
+		t.Fatal(err, out)
+	}
+	var caps oden.Capabilities
+	if err := json.Unmarshal(out.Bytes(), &caps); err != nil {
+		t.Fatal(err, out)
+	}
+	if caps.Name != "o-proj" || !slices.Contains(caps.Capabilities, "query") || !slices.Contains(caps.Capabilities, "tui") {
+		t.Fatalf("unexpected capabilities: %+v", caps)
+	}
+
+	// Query projects and templates.
 	root := filepath.Join(tl.Home, "proj")
-	if err := tl.Main([]string{"project", "new", "shelled", "--root", root, "--license", "none"}); err != nil {
+	if err := tl.Main([]string{"new", "alpha-repo", "--root", root, "--license", "none", "--no-mtm"}); err != nil {
 		t.Fatal(err, out)
-	}
-	dir := filepath.Join(root, "shelled")
-	for _, line := range []string{"git init: " + dir, "commit: ", "manifest: shelled -> ~/proj/shelled", "cd " + dir, `"dir": "` + dir + `"`} {
-		if !strings.Contains(out.String(), line) {
-			t.Fatalf("missing %q in %q", line, out)
-		}
-	}
-	if got := git(t, tl, dir, "ls-tree", "--name-only", "HEAD"); got != ".gitignore\nAGENTS.md" {
-		t.Fatalf("tree %q", got)
-	}
-
-	out.Reset()
-	if err := tl.Main([]string{"project", "list", "--json", "{}"}); err != nil {
-		t.Fatal(err, out)
-	}
-	var rows []projectRow
-	if err := json.Unmarshal(out.Bytes(), &rows); err != nil {
-		t.Fatal(err, out)
-	}
-	if len(rows) != 1 || rows[0].ID != "shelled" || rows[0].Label != "shelled" || rows[0].Data.Dir != dir {
-		t.Fatalf("rows %+v", rows)
-	}
-
-	out.Reset()
-	if err := tl.Main([]string{"project", "open", "--target", rows[0].ID, "--json", "{}", "--yes"}); err != nil {
-		t.Fatal(err, out)
-	}
-	var row Row
-	if err := json.Unmarshal(out.Bytes(), &row); err != nil || row.Dir != dir || row.Path != "~/proj/shelled" {
-		t.Fatalf("open %q %v", out, err)
-	}
-	if err := tl.Main([]string{"project", "open"}); err == nil || !strings.Contains(err.Error(), "--target") {
-		t.Fatalf("open without target: %v", err)
-	}
-}
-
-func TestProjectShellNewFlags(t *testing.T) {
-	tl, out, gh := tool(t)
-	root := filepath.Join(tl.Home, "proj")
-	if err := tl.Main([]string{"project", "new", "--root", root, "pub", "--github", "--private=false", "--mtm=false"}); err != nil {
-		t.Fatal(err, out)
-	}
-	if len(*gh) != 1 || (*gh)[0][4] != "--public" {
-		t.Fatalf("gh %q", *gh)
-	}
-	if !strings.Contains(out.String(), "mtm: skipped (--no-mtm)") {
-		t.Fatalf("out %q", out)
-	}
-}
-
-func TestProjectShellCheckAndTemplates(t *testing.T) {
-	tl, out, _ := tool(t)
-	sub := homeRepo(t, tl)
-	if err := tl.Main([]string{"project", "check", sub}); err == nil || !strings.Contains(err.Error(), "home directory") {
-		t.Fatalf("err %v", err)
 	}
 	out.Reset()
-	if err := tl.Main([]string{"template", "list"}); err != nil || strings.TrimSpace(out.String()) != "[]" {
-		t.Fatalf("templates %q %v", out, err)
+	if err := tl.Main([]string{"query", "--kind", KindProject, "alpha"}); err != nil {
+		t.Fatal(err, out)
 	}
+	var qr oden.ExtQueryResult
+	if err := json.Unmarshal(out.Bytes(), &qr); err != nil {
+		t.Fatal(err, out)
+	}
+	if qr.Total != 1 || len(qr.Items) != 1 || qr.Items[0].ID != "alpha-repo" || qr.Items[0].Fields["path"] != "~/proj/alpha-repo" {
+		t.Fatalf("unexpected query result: %+v", qr)
+	}
+
 	catalog(t, tl)
 	out.Reset()
-	if err := tl.Main([]string{"template", "list"}); err != nil {
-		t.Fatal(err)
+	if err := tl.Main([]string{"query", "--kind", KindTemplate}); err != nil {
+		t.Fatal(err, out)
 	}
-	var got []struct {
-		ID string `json:"id"`
-	}
-	if err := json.Unmarshal(out.Bytes(), &got); err != nil || len(got) != 2 || got[0].ID != "packed" || got[1].ID != "plain" {
-		t.Fatalf("templates %q %v", out, err)
+	var tqr oden.ExtQueryResult
+	if err := json.Unmarshal(out.Bytes(), &tqr); err != nil || tqr.Total != 2 {
+		t.Fatalf("template query: %+v %v", tqr, err)
 	}
 }
 
-// project is a record noun over the manifest: create is project new under
-// the core name, get reads one row by its name, set writes the archive role,
-// archive hides the row from project list, and delete drops the manifest
-// entry only.
-func TestProjectIsARecordNoun(t *testing.T) {
+func TestCLIStandardCommandsAndResolve(t *testing.T) {
 	tl, out, _ := tool(t)
+
+	// --version
+	if err := tl.Main([]string{"--version"}); err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.TrimSpace(out.String()); got != "o-proj "+Version {
+		t.Fatalf("version = %q", got)
+	}
+
+	// binding check
+	out.Reset()
+	if err := tl.Main([]string{"binding", "check"}); err != nil {
+		t.Fatalf("binding check failed: %v\n%s", err, out)
+	}
+	if !strings.Contains(out.String(), "0 errors") {
+		t.Fatalf("binding check output = %q", out)
+	}
+
+	// inspect actions
+	out.Reset()
+	if err := tl.Main([]string{"inspect", "actions"}); err != nil {
+		t.Fatal(err, out)
+	}
+	if !strings.Contains(out.String(), "project.new") || !strings.Contains(out.String(), "input.line.start") {
+		t.Fatalf("inspect actions missing expected commands:\n%s", out)
+	}
+
+	// --smoke
+	out.Reset()
+	if err := tl.Main([]string{"--smoke"}); err != nil {
+		t.Fatalf("--smoke failed: %v\n%s", err, out)
+	}
+	if !strings.Contains(out.String(), "checks passed") {
+		t.Fatalf("--smoke output = %q", out)
+	}
+
+	// show / manifest archive / restore / delete with prefix resolution (c.Resolve)
 	root := filepath.Join(tl.Home, "proj")
-	if err := tl.Main([]string{"project", "create", "made", "--root", root, "--license", "none"}); err != nil {
+	if err := tl.Main([]string{"new", "my-service", "--root", root, "--license", "none", "--no-mtm"}); err != nil {
 		t.Fatal(err, out)
-	}
-	if _, err := os.Stat(filepath.Join(root, "made", ".git")); err != nil {
-		t.Fatalf("project create did not make the repository: %v", err)
-	}
-	listed := func(args ...string) []string {
-		out.Reset()
-		if err := tl.Main(append([]string{"project", "list", "--json", "{}"}, args...)); err != nil {
-			t.Fatal(err, out)
-		}
-		var rows []projectRow
-		if err := json.Unmarshal(out.Bytes(), &rows); err != nil {
-			t.Fatal(err, out)
-		}
-		var ids []string
-		for _, r := range rows {
-			ids = append(ids, r.ID)
-		}
-		return ids
 	}
 	out.Reset()
-	if err := tl.Main([]string{"project", "get", "made"}); err != nil {
-		t.Fatal(err, out)
+	if err := tl.Main([]string{"show", "my-ser", "--json"}); err != nil {
+		t.Fatalf("show by prefix: %v\n%s", err, out)
 	}
-	var got map[string]any
-	if err := json.Unmarshal(out.Bytes(), &got); err != nil || got["name"] != "made" || got["archived"] != false {
-		t.Fatalf("project get: %v %q", err, out)
+	var shown map[string]any
+	if err := json.Unmarshal(out.Bytes(), &shown); err != nil || shown["name"] != "my-service" {
+		t.Fatalf("show json: %v %q", err, out)
 	}
-	if err := tl.Main([]string{"project", "archive", "made", "--yes"}); err != nil {
-		t.Fatal(err, out)
-	}
-	if ids := listed(); len(ids) != 0 {
-		t.Fatalf("archived project listed: %v", ids)
-	}
-	if ids := listed("--archived", "true"); len(ids) != 1 {
-		t.Fatalf("project list --archived: %v", ids)
-	}
-	if err := tl.Main([]string{"project", "restore", "made"}); err != nil {
-		t.Fatal(err, out)
-	}
-	if ids := listed(); len(ids) != 1 {
-		t.Fatalf("restored project missing: %v", ids)
-	}
-	if err := tl.Main([]string{"project", "delete", "made", "--yes"}); err != nil {
-		t.Fatal(err, out)
-	}
-	if ids := listed("--archived", "true"); len(ids) != 0 {
-		t.Fatalf("deleted project listed: %v", ids)
-	}
-	if _, err := os.Stat(filepath.Join(root, "made", ".git")); err != nil {
-		t.Fatalf("project delete removed the repository: %v", err)
-	}
-}
 
-// clone and seed are project verbs (the commands of the same names run the
-// same handlers): clone reports a missing repository on a dry run, seed adds
-// a hub link's repository to the manifest.
-func TestProjectCloneAndSeedVerbs(t *testing.T) {
-	tl, out, _ := tool(t)
-	hub := filepath.Join(tl.Home, "hub", "o")
-	dir := filepath.Join(tl.Home, "proj", "linked")
-	for _, d := range []string{hub, dir} {
-		if err := os.MkdirAll(d, 0o755); err != nil {
-			t.Fatal(err)
-		}
-	}
-	if err := os.Symlink(dir, filepath.Join(hub, "linked")); err != nil {
-		t.Fatal(err)
-	}
-	if err := tl.Main([]string{"project", "seed", "--hub", hub, "--inventory", "none", "--json", "{}"}); err != nil {
+	out.Reset()
+	if err := tl.Main([]string{"manifest", "archive", "my-ser"}); err != nil {
 		t.Fatal(err, out)
-	}
-	var seeded SeedResult
-	if err := json.Unmarshal(out.Bytes(), &seeded); err != nil || len(seeded.Added) != 1 || seeded.Added[0].Name != "linked" {
-		t.Fatalf("seed %q %v", out, err)
-	}
-	if err := os.RemoveAll(dir); err != nil {
-		t.Fatal(err)
 	}
 	out.Reset()
-	if err := tl.Main([]string{"project", "clone", "linked", "--dry_run", "true", "--hub", "none"}); err != nil {
+	if err := tl.Main([]string{"manifest", "list", "--json"}); err != nil {
 		t.Fatal(err, out)
 	}
-	var results []SyncResult
-	if err := json.Unmarshal(out.Bytes(), &results); err != nil || len(results) != 1 || results[0].Action == "present" {
-		t.Fatalf("clone %q %v", out, err)
+	var listed []Row
+	if err := json.Unmarshal(out.Bytes(), &listed); err != nil || len(listed) != 0 {
+		t.Fatalf("archived should be hidden: %+v %v", listed, err)
+	}
+
+	out.Reset()
+	if err := tl.Main([]string{"manifest", "restore", "my-ser"}); err != nil {
+		t.Fatal(err, out)
+	}
+	out.Reset()
+	if err := tl.Main([]string{"manifest", "delete", "my-ser"}); err != nil {
+		t.Fatal(err, out)
+	}
+	if entries, _ := tl.Manifest(); len(entries) != 0 {
+		t.Fatalf("manifest after delete: %+v", entries)
+	}
+	if _, err := os.Stat(filepath.Join(root, "my-service", ".git")); err != nil {
+		t.Fatalf("manifest delete must keep repository on disk: %v", err)
 	}
 }
